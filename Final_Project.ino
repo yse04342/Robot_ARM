@@ -1,0 +1,84 @@
+#include <Servo.h> // 서보모터를 사용하기 위한 헤더파일
+
+Servo servo[6]; // 서보모터 6개
+
+const int inX = A0; //아날로그 input ( 조이스틱 x축 )
+const int inY = A1; // 아날로그 input ( 조이스틱 y축 ) 
+const int sensorPin1 = A4; // 아날로그 핀( 가변저항 1번 )
+const int sensorPin2 = A5; // 아날로그 핀( 가변저항 2번 )
+const int inPressed = 2; //디지털 input ( 조이스틱 스위치 )
+  
+int xValue = 0; // variable to store x value 
+int yValue = 0; // variable to store y value 
+int pos[6]={80,30,50,20,90,90}; // 초기값 배열
+int notPressed = 0; // variable to store the button's state => 1 if not pressed
+
+
+int x_ang=map(xValue,0,1023,0,180); // 0 ~ 1023의 값을 0 ~ 180의 각도(angle) 값으로 변환
+int y_ang=map(yValue,0,1023,0,180); // 0 ~ 1023의 값을 0 ~ 180의 각도(angle) 값으로 변환
+int Transform1,Transform2; // 변환값 ( A4번 가변저항,A5번 가변저항 )
+int sensor1,sensor2;// 센서값 ( A4번 가변저항,A5번 가변저항 )
+void setup() 
+{ 
+  pinMode(inX, INPUT); // setup x input 
+  pinMode(inY, INPUT); // setup y input 
+  pinMode(inPressed, INPUT_PULLUP); // we use a pullup-resistor for the button functionality // 조이스틱 스위치 버튼
+  for(int i=0; i<6; i++) // 핀번호 설정 및 서보모터 읽는 값(write)설정
+  {
+    servo[i].attach(13-i); // 핀번호 설정
+    servo[i].write(pos[i]); // 서보모터 각도 설정
+  }
+  Serial.begin(9600); // Setup serial connection for print out to console // 보레이트 9600으로 설정 
+} 
+void  Write() // Write함수 설정 // 로봇 팔에서는 실제 사용 X → 지워도 됨
+{
+  for(int i=0; i<6; i++)
+    servo[i].write(pos[i]);
+} 
+void loop() { 
+  xValue = analogRead(inX); // x값을 읽는다. [range 0 -> 1023] 
+  yValue = analogRead(inY); // y값을 읽는다. [range 0 -> 1023] 
+  notPressed = digitalRead(inPressed); // 버튼의 상태를 읽음 : 1 = not pressed, 0 = pressed 
+  sensor1 = analogRead(sensorPin1); // 센서값을 읽는다.
+  sensor2 = analogRead(sensorPin2); // 센서값을 읽는다.
+  
+  x_ang=map(xValue,0,1023,0,180); // 각도값 변환 ( 0 ~ 180도)
+  y_ang=map(yValue,0,1023,30,180); // 각도값 변환 ( 30 ~ 180도)
+  Transform1 = map(sensor1,0,1023,0,180);// 가변저항 1번 0 ~ 1023을 0 ~ 180으로 변환
+  Transform2 = map(sensor2,0,1023,0,70); // 가변저항 2번(집게부분)에 연결 된 서보모터는 0 ~ 70도 사이에서만 동작, 즉 0 ~ 1023을 0 ~ 70값으로 변환
+  
+  servo[0].write(x_ang); // 변환 된 조이스틱 x축 각도값 입력
+  servo[1].write(y_ang); // 변환 된 조이스틱 y축 각도값 입력
+  servo[2].write(y_ang); // 변환 된 조이스틱 y축 각도값 입력
+  servo[4].write(Transform1); // 변환 된 가변저항 1번 값 입력
+  servo[5].write(Transform2); // 변환 된 가변저항 2번 값 입력
+
+  if(notPressed == 0) // 스위치가 눌리면?  // 서보모터 4번(servo[3]) 동작을 제어할 계획이였음
+  {
+    
+  }
+  else // 안눌리면?
+  {
+
+  }
+  
+  // print out values 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////시리얼 창으로 값을 볼 수 있는 창 ///////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Serial.println("=========================="); 
+  Serial.print("X: "); 
+  Serial.println(xValue);
+  Serial.println(x_ang);
+  Serial.print("Y: "); 
+  Serial.println(yValue); 
+  Serial.println(y_ang);
+  Serial.print("Not pressed: "); 
+  Serial.println(notPressed); 
+  // The following delay of 1000ms is only for debugging reasons (it's easier to follow the values on the serial monitor) 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  delay(10); // Probably not needed for most applications 
+  
+} 
